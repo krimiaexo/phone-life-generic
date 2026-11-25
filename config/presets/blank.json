@@ -3,12 +3,12 @@
     "title": "PHONE LIFE",
     "subtitle": "从空白开始，记录你的手机生活。",
     "hero": "生活的下一页，由你打开。",
-    "defaultPin": "0709"
+    "defaultPin": "0812"
   },
   "player": {
-    "realName": "我",
-    "stageName": "我",
-    "koreanName": "",
+    "realName": "윤이준",
+    "stageName": "윤이준",
+    "koreanName": "윤이준",
     "gender": "",
     "age": 22,
     "nationality": "中国",
@@ -25,9 +25,38 @@
     "publicImage": "",
     "privatePersonality": ""
   },
-  "accountHandle": "my_phone",
+  "accountHandle": "yinyijun",
   "profileBio": "",
-  "contacts": [],
+  "contacts": [
+    {
+      "key": "jaehee",
+      "name": "在熙❤️",
+      "handle": "jiangzaixi",
+      "slot": "boyfriend",
+      "bio": "姜在熙"
+    },
+    {
+      "key": "noisy",
+      "name": "聒噪之人",
+      "handle": "noisy_friend",
+      "slot": "industryFriends",
+      "bio": ""
+    },
+    {
+      "key": "taegang",
+      "name": "태강그룹",
+      "handle": "taigangjituan",
+      "slot": "brandContacts",
+      "bio": ""
+    },
+    {
+      "key": "sihyun",
+      "name": "김시현",
+      "handle": "jinshixian",
+      "slot": "industryFriends",
+      "bio": ""
+    }
+  ],
   "desktopPages": [
     [
       [
@@ -159,7 +188,7 @@
       ]
     ]
   ],
-  "scenarioFile": null,
+  "scenarioFile": "config/scenario.json",
   "wallet": {
     "initialBalance": 50000000,
     "addressLabel": "家",
