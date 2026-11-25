@@ -53,3 +53,124 @@ const templateKKFriends=renderKKFriends;
 renderKKFriends=function(){return templateKKFriends().replace(/<section[^>]*>\s*<button[^>]*data-action="kk-collapse"[^>]*data-id="plus"[\s\S]*?<\/section>/,'');};
 renderCompany=function(){return page('生活计划',`${storyCompanyPanel()}<div class="toolbar">${button('new-event','新增日程')}${button('company-calendar','打开日历')}</div>${state.events.filter(e=>e.date===localDate()).map(e=>`<button class="event-row" data-action="edit-event" data-id="${e.id}"><time>${esc(e.time)}</time><strong>${esc(e.title)}</strong></button>`).join('')||empty('今天还没有安排')}`);};
 renderXReferenceExplore=function(){currentSocial='X';const query=routeParams.query||'',posts=seedPosts('X').filter(p=>(p.text+' '+p.display+' '+p.handle).toLowerCase().includes(query.toLowerCase()));return xRefShell(`<div class="xr-search-box">${input('xrSearchInput','搜索动态或用户',query)}</div><h2 class="section-title">${query?'搜索结果':'探索'}</h2>${posts.map(renderXReferencePost).join('')||empty(query?'没有匹配的动态':'还没有动态，发布第一条记录吧')}`,'search','探索');};
+
+
+/* YIJUN custom scenario seed: local-only messages, social profiles and scripted call. */
+function yjScenarioDate(hour, minute) {
+ const d = new Date(2026, 10, 20, hour, minute, 0, 0);
+ return {time:String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0'),sentAt:d.toISOString(),createdAt:d.getTime()};
+}
+function yjSeedMessage(chatId, from, text, hour, minute, id) {
+ const c=state.conversations[chatId]; if(!c) return null;
+ const stamp=yjScenarioDate(hour,minute);
+ const m={id,text,translation:'',from,time:stamp.time,sentAt:stamp.sentAt,read:true,initial:true};
+ c.messages.push(m); c.updatedAt=stamp.createdAt; return m;
+}
+function yjPushChatLine(chatId, from, text, hour, minute, id) {
+ const c=state.conversations[chatId]; if(!c) return null;
+ const stamp=yjScenarioDate(hour,minute);
+ const m={id,text,translation:'',from,time:stamp.time,sentAt:stamp.sentAt,read:from==='나',initial:true};
+ c.messages.push(m); c.updatedAt=stamp.createdAt;
+ if(from!=='나') addNotification('KakaoTalk',c.name,text,'',{chatId,read:false});
+ saveState(); invalidate('kakao-chats'); return m;
+}
+const yjBaseInitializeWorld=initializeWorld;
+initializeWorld=function(){
+ yjBaseInitializeWorld();
+ if(state.yjScenarioSeedVersion===1) return;
+ if(!state.story || !state.templateConfigured) initializeStory();
+ const zaixi=state.story?.characters?.['custom-zaixi'];
+ const noisy=state.story?.characters?.['custom-noisy-person'];
+ if(!zaixi || !noisy) throw new Error('尹伊俊场景联系人初始化失败');
+ const chatA=state.conversations[zaixi.chatId], chatB=state.conversations[noisy.chatId];
+ chatA.messages=[];
+ chatB.messages=[];
+ yjSeedMessage(zaixi.chatId,'나','明天休息日对不对？',14,0,'yj-kkt-a-01');
+ yjSeedMessage(zaixi.chatId,'상대','嗯哼',14,2,'yj-kkt-a-02');
+ yjSeedMessage(zaixi.chatId,'나','要不要出去玩？',14,11,'yj-kkt-a-03');
+ yjSeedMessage(zaixi.chatId,'상대','好啊!150件小事还没做完呢',14,13,'yj-kkt-a-04');
+ yjSeedMessage(zaixi.chatId,'나','好~不过明天我安排哦~',14,16,'yj-kkt-a-05');
+ yjSeedMessage(zaixi.chatId,'나','晚上接你下班~',14,19,'yj-kkt-a-06');
+ yjSeedMessage(noisy.chatId,'나','你说明天要不要直接去济州岛？她正好要休息',16,0,'yj-kkt-b-01');
+ yjSeedMessage(noisy.chatId,'상대','哇~我们家宝贝真厉害，为什么不直接去马尔代夫呢',16,3,'yj-kkt-b-02');
+ yjSeedMessage(noisy.chatId,'나','你说的也有道理',16,6,'yj-kkt-b-03');
+ yjSeedMessage(noisy.chatId,'상대','然后姜在熙就会在那么美好的地方告诉你我们分手吧，不要哭哦~😊',16,9,'yj-kkt-b-04');
+ state.browser.history=(CONFIG.template.safariHistory||[]).map((url,i)=>({url,time:new Date(2026,10,20,10,i*3,0,0).getTime()}));
+ state.browser.tabs||=[];
+ state.notifications||=[];
+ state.xMutuals=JSON.parse(JSON.stringify(CONFIG.template.xMutuals||[]));
+ const x=state.accounts.X?.[0];
+ if(x){
+  x.profile.name='윤이준'; x.profile.handle='yinyijun';
+  x.following||={};
+  state.xMutuals.forEach(p=>{x.following[p.handle]=true;});
+ }
+ const ig=state.accounts.Instagram?.[0];
+ if(ig && !ig.posts.some(p=>p.id==='yj-zaixi-ig-post')){
+  ig.posts.unshift({id:'yj-zaixi-ig-post',display:'在熙❤️',handle:'jiangzaixi',text:'明天也要拍',translation:'',likes:0,date:'11月20日',createdAt:new Date(2026,10,20,19,30).getTime(),replies:0,reposts:0,comments:[]});
+ }
+ state.yjScenarioSeedVersion=1;
+ state.yjScenario={unlockPopupPending:true,callTriggered:false,zaixiChatId:zaixi.chatId};
+ saveState();
+};
+
+/* Show the scripted incoming KakaoTalk message only after the first successful unlock. */
+const yjBaseAddDigit=addDigit;
+addDigit=function(d){
+ const wasUnlocked=state.unlocked;
+ yjBaseAddDigit(d);
+ if(!wasUnlocked && state.unlocked && state.yjScenario?.unlockPopupPending){
+  state.yjScenario.unlockPopupPending=false;
+  const chatId=state.yjScenario.zaixiChatId;
+  yjPushChatLine(chatId,'상대','晚上想吃什么吗？',19,35,'yj-kkt-a-07');
+  saveState();
+  setTimeout(()=>sheet('KakaoTalk · 在熙❤️',`<div class="world-form"><p><strong>在熙❤️</strong></p><p>晚上想吃什么吗？</p>${button('yj-quick-reply','在熙要吃什么？我还在想明天要做什么呢')}</div>`),180);
+ }
+};
+ACTIONS['yj-quick-reply']=()=>{
+ closeSheet();
+ const id=state.yjScenario?.zaixiChatId;if(!id)return;
+ yjPushChatLine(id,'나','在熙要吃什么？我还在想明天要做什么呢',19,40,'yj-kkt-a-08');
+ setTimeout(()=>yjPushChatLine(id,'상대','哎一古，吃炸酱面吧？',19,43,'yj-kkt-a-09'),850);
+ setTimeout(()=>yjPushChatLine(id,'상대','不要想这么多，去做什么都可以!',19,46,'yj-kkt-a-10'),2100);
+};
+
+/* Liking the specified text-only Instagram post starts a fictional incoming call. */
+const yjBaseToggleLike=toggleLike;
+toggleLike=function(platform,id){
+ const wasLiked=!!activeAccount(platform)?.liked?.[id];
+ yjBaseToggleLike(platform,id);
+ if(platform==='Instagram' && id==='yj-zaixi-ig-post' && !wasLiked && activeAccount('Instagram')?.liked?.[id] && !state.yjScenario?.callTriggered){
+  state.yjScenario.callTriggered=true; saveState();
+  setTimeout(()=>beginLocalCall({platform:'Instagram',video:false,direction:'incoming',peer:'jiangzaixi',name:'在熙❤️'}),220);
+ }
+};
+const yjBaseScheduleCallMessages=scheduleCallMessages;
+scheduleCallMessages=function(s){
+ if(s.peer!=='jiangzaixi'){yjBaseScheduleCallMessages(s);return;}
+ if(s.scriptStarted)return;s.scriptStarted=true;
+ const lines=[
+  {from:'상대',text:'呀尹伊俊，不是来接我吗？'},
+  {from:'나',text:'在路上了在熙呀，我刚刚一直在想穿些什么呢'},
+  {from:'상대',text:'可爱，快来吧我饿了'},
+  {from:'나',text:'好~'}
+ ];
+ lines.forEach((line,i)=>callLater(()=>{if(activeCallSession?.id===s.id&&s.phase==='connected')showIgMessage(line.from,line.text);},700+i*1900));
+};
+
+/* X-only mutual accounts; they do not become extra KakaoTalk contacts. */
+const yjBaseSocialProfile=renderSocialProfile;
+renderSocialProfile=function(){
+ const platform=routeParams.platform||currentSocial,handle=routeParams.handle||'';
+ const person=platform==='X'?(state.xMutuals||[]).find(p=>p.handle===handle):null;
+ if(!person)return yjBaseSocialProfile();
+ const posts=seedPosts('X').filter(p=>p.handle===handle);
+ return `<section class="social-page world-page dark">${renderHeader('个人主页')}<div class="app-scroll"><div class="profile-social"><div class="profile-banner"></div><div class="profile-social-row">${friendAvatarHtml({name:person.name})}<span class="primary-outline" style="padding:8px 14px;border-radius:18px">互相关注</span></div><h2>${esc(person.name)}</h2><div class="handle">@${esc(person.handle)}</div><p>${esc(person.bio||'')}</p><div class="profile-stats"><span><b>${posts.length}</b> 帖子</span><span><b>${esc(person.followers||'0')}</b> 粉丝</span><span><b>互关</b> 关系</span></div></div><div class="profile-tabs"><span class="active">帖子</span></div>${posts.map((p,i)=>socialPostHtml(p,'X',i)).join('')||empty('还没有内容')}</div>${renderSocialBottom('X','me')}</section>`;
+};
+const yjBaseXExplore=renderXReferenceExplore;
+renderXReferenceExplore=function(){
+ const query=routeParams.query||'',q=query.toLowerCase();
+ const people=(state.xMutuals||[]).filter(p=>!q||(p.name+' '+p.handle).toLowerCase().includes(q));
+ const posts=seedPosts('X').filter(p=>(p.text+' '+p.display+' '+p.handle).toLowerCase().includes(q));
+ return xRefShell(`<div class="xr-search-box">${input('xrSearchInput','搜索账号或动态',query)}</div><h2 class="section-title">互关账号</h2>${people.map(p=>`<button class="list-row" data-action="visit-profile" data-platform="X" data-handle="${esc(p.handle)}">${friendAvatarHtml({name:p.name})}<span class="list-main"><strong>${esc(p.name)}</strong><small>@${esc(p.handle)} · 互相关注</small></span></button>`).join('')||empty('没有匹配的互关账号')}<h2 class="section-title">帖子</h2>${posts.map(p=>renderXReferencePost(p)).join('')||empty('没有匹配的动态')}`,'search','探索');
+};

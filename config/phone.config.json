@@ -1,6 +1,59 @@
 {
   "schemaVersion": 1,
   "preset": "blank",
-  "storageNamespace": "phone-life-blank-v1",
-  "overrides": {}
+  "storageNamespace": "yinyijun-phone-v1",
+  "overrides": {
+    "app": {
+      "defaultPin": "0812"
+    },
+    "player": {
+      "realName": "尹伊俊",
+      "stageName": "윤이준"
+    },
+    "accountHandle": "yinyijun",
+    "profileBio": "",
+    "contacts": [
+      {
+        "key": "zaixi",
+        "name": "在熙❤️",
+        "handle": "jiangzaixi",
+        "slot": "boyfriend",
+        "profession": "朋友"
+      },
+      {
+        "key": "noisy-person",
+        "name": "聒噪之人",
+        "handle": "noisy_person",
+        "slot": "nonIndustryFriends",
+        "profession": "朋友"
+      }
+    ],
+    "safariHistory": [
+      "和女朋友周末去哪个国家比较好",
+      "女朋友有和我想做150件小事算少吗",
+      "女朋友爱打拳击怎么办",
+      "泰刚集团",
+      "姜在熙"
+    ],
+    "xMutuals": [
+      {
+        "name": "태강그룹",
+        "handle": "taigangjituan",
+        "bio": "",
+        "followers": "0"
+      },
+      {
+        "name": "강재희",
+        "handle": "jiangzaixi",
+        "bio": "",
+        "followers": "0"
+      },
+      {
+        "name": "김시현",
+        "handle": "jinshixian",
+        "bio": "",
+        "followers": "0"
+      }
+    ]
+  }
 }
