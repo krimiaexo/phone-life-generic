@@ -1,6 +1,64 @@
 {
-  "id": "my_story",
-  "title": "我的故事",
-  "nodes": [],
+  "id": "yoon_ijun_20261120",
+  "title": "11月20日的安排",
+  "nodes": [
+    {
+      "id": "jaehee_chat_1",
+      "contact": "jaehee",
+      "app": "kakao",
+      "lines": [
+        {
+          "role": "npc",
+          "text": "嗯哼"
+        },
+        {
+          "role": "player",
+          "text": "明天休息日对不对？"
+        },
+        {
+          "role": "npc",
+          "text": "好啊!150件小事还没做完呢"
+        },
+        {
+          "role": "player",
+          "text": "要不要出去玩？"
+        },
+        {
+          "role": "player",
+          "text": "好~不过明天我安排哦~"
+        },
+        {
+          "role": "player",
+          "text": "晚上接你下班~"
+        }
+      ]
+    },
+    {
+      "id": "noisy_chat_1",
+      "contact": "noisy",
+      "app": "kakao",
+      "lines": [
+        {
+          "role": "npc",
+          "text": "哇~我们家宝贝真厉害，为什么不直接去马尔代夫呢"
+        },
+        {
+          "role": "player",
+          "text": "你说明天要不要直接去济州岛？她正好要休息"
+        },
+        {
+          "role": "player",
+          "text": "你说的也有道理"
+        },
+        {
+          "role": "npc",
+          "text": "然后姜在熙就会在那么美好的地方告诉你我们分手吧，不要哭哦~😊"
+        }
+      ],
+      "dependsOn": [
+        "jaehee_chat_1"
+      ]
+    }
+  ],
   "publicTexts": {}
 }
